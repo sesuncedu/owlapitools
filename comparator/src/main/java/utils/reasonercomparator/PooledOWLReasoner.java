@@ -8,7 +8,8 @@
  */
 package utils.reasonercomparator;
 
-import java.util.ArrayList;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asList;
+
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -23,7 +24,6 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
-import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
@@ -31,7 +31,6 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 import org.semanticweb.owlapi.reasoner.AxiomNotInProfileException;
 import org.semanticweb.owlapi.reasoner.BufferingMode;
 import org.semanticweb.owlapi.reasoner.ClassExpressionNotInProfileException;
@@ -169,35 +168,26 @@ public final class PooledOWLReasoner implements OWLReasoner,
     }
 
     private void prefetch() {
-        final List<OWLClass> classes = new ArrayList<>(
-                rootOntology.getClassesInSignature());
-        final int chunk = classes.size() / concurrentNumber;
+        List<OWLClass> classes = asList(rootOntology.classesInSignature());
+        int chunk = classes.size() / concurrentNumber;
         for (int i = 0; i < concurrentNumber; i++) {
-            final int position = i * chunk;
-            exec.execute(new Runnable() {
-
-                @Override
-                public void run() {
-                    for (int j = position; j < chunk + position; j++) {
-                        /*
-                         * preload all named classes; it is safe to start
-                         * asynchronously since all actual reasoners are
-                         * synchronized, so they are either precomputing
-                         * inferences or will do so to answer the query
-                         */
-                        getEquivalentClasses(classes.get(j));
-                        for (OWLSubClassOfAxiom ax : rootOntology
-                                .getSubClassAxiomsForSubClass(classes.get(j))) {
-                            getEquivalentClasses(ax.getSuperClass());
-                        }
-                        for (OWLEquivalentClassesAxiom ax : rootOntology
-                                .getEquivalentClassesAxioms(classes.get(j))) {
-                            for (OWLClassExpression ex : ax
-                                    .getClassExpressions()) {
-                                getEquivalentClasses(ex);
-                            }
-                        }
-                    }
+            int position = i * chunk;
+            exec.execute(() -> {
+                for (int j = position; j < chunk + position; j++) {
+                    /*
+                     * preload all named classes; it is safe to start
+                     * asynchronously since all actual reasoners are
+                     * synchronized, so they are either precomputing
+                     * inferences or will do so to answer the query
+                     */
+                    getEquivalentClasses(classes.get(j));
+                    rootOntology.subClassAxiomsForSubClass(classes.get(j))
+                            .forEach(
+                                    ax -> getEquivalentClasses(ax
+                                            .getSuperClass()));
+                    rootOntology.equivalentClassesAxioms(classes.get(j))
+                            .flatMap(ax -> ax.classExpressions())
+                            .forEach(e -> getEquivalentClasses(e));
                 }
             });
         }

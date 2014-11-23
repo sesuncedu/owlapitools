@@ -98,16 +98,16 @@ public class FillerSuggestorTests extends AbstractSuggestorTest {
         FillerSuggestor fs = fac.getFillerSuggestor();
         OWLDataFactory f = fs.getReasoner().getRootOntology()
                 .getOWLOntologyManager().getOWLDataFactory();
-        System.out.println("FillerSuggestorTests.testIsCurrentFiller()\n"
-                + fs.getReasoner().getRootOntology().getAxioms().toString()
-                        .replace(",", ",\n\t"));
-        System.out
-                .println("FillerSuggestorTests.testIsCurrentFiller() subclasses of thing \n"
-                        + fs.getReasoner().getSubClasses(f.getOWLThing(), true));
-        System.out
-                .println("FillerSuggestorTests.testIsCurrentFiller() subclasses of thing \n"
-                        + fs.getReasoner()
-                                .getSubClasses(f.getOWLThing(), false));
+        // System.out.println("FillerSuggestorTests.testIsCurrentFiller()\n"
+        // + fs.getReasoner().getRootOntology().getAxioms().toString()
+        // .replace(",", ",\n\t"));
+        // System.out
+        // .println("FillerSuggestorTests.testIsCurrentFiller() subclasses of thing \n"
+        // + fs.getReasoner().getSubClasses(f.getOWLThing(), true));
+        // System.out
+        // .println("FillerSuggestorTests.testIsCurrentFiller() subclasses of thing \n"
+        // + fs.getReasoner()
+        // .getSubClasses(f.getOWLThing(), false));
         // TODO add a generic reasoner to implement these tests
         // OWLReasoner test=new
         // JFactFactory().createReasoner(fs.getReasoner().getRootOntology());
@@ -200,16 +200,15 @@ public class FillerSuggestorTests extends AbstractSuggestorTest {
         assertTrue(all.containsEntity(cc));
         assertTrue(all.containsEntity(cd));
         assertTrue(all.containsEntity(df.getOWLThing()));
-        assertEquals(4, all.getNodes().size());
+        assertEquals(4, all.nodes().count());
         NodeSet<OWLClass> direct = fs.getCurrentNamedFillers(ca, oa, true);
         assertTrue(direct.containsEntity(cb));
-        assertFalse(direct.containsEntity(cc)); // as cd is more specific
+        // as cd is more specific
+        assertFalse(direct.containsEntity(cc));
         assertTrue(direct.containsEntity(cd));
-        assertFalse(direct.containsEntity(df.getOWLThing())); // as more
-                                                              // specific
-                                                              // properties have
-                                                              // been found
-        assertEquals(2, direct.getNodes().size());
+        // as more specific properties have been found
+        assertFalse(direct.containsEntity(df.getOWLThing()));
+        assertEquals(2, direct.nodes().count());
     }
 
     public void testGetPossibleFillers() throws Exception {
@@ -222,7 +221,7 @@ public class FillerSuggestorTests extends AbstractSuggestorTest {
         FillerSuggestor fs = fac.getFillerSuggestor();
         NodeSet<OWLClass> pSuccessorsA = fs.getPossibleNamedFillers(ca, oa,
                 null, false);
-        assertEquals(8, pSuccessorsA.getNodes().size());
+        assertEquals(8, pSuccessorsA.nodes().count());
         assertTrue(pSuccessorsA.containsEntity(ca));
         assertTrue(pSuccessorsA.containsEntity(ca1));
         assertTrue(pSuccessorsA.containsEntity(cb));
@@ -233,7 +232,7 @@ public class FillerSuggestorTests extends AbstractSuggestorTest {
         assertTrue(pSuccessorsA.containsEntity(ce));
         NodeSet<OWLClass> pSuccessorsADirect = fs.getPossibleNamedFillers(ca,
                 oa, null, true);
-        assertEquals(4, pSuccessorsADirect.getNodes().size());
+        assertEquals(4, pSuccessorsADirect.nodes().count());
         // not ca as it is a sub of cd
         assertTrue(pSuccessorsADirect.containsEntity(cb));
         assertTrue(pSuccessorsADirect.containsEntity(cc));

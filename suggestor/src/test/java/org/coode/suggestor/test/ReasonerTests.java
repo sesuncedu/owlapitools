@@ -28,6 +28,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 @SuppressWarnings("javadoc")
 @Ignore
 public class ReasonerTests {
+
     public static final String JFACT_FACTORY = "uk.ac.manchester.cs.jfact.JFactFactory";
 
     // public static final String HERMIT_FACTORY =
@@ -38,28 +39,31 @@ public class ReasonerTests {
     public void testReasoner() throws Exception {
         OWLOntologyManager mngr = OWLManager.createOWLOntologyManager();
         OWLOntology ont = mngr.createOntology();
-        final OWLReasonerFactory fac = (OWLReasonerFactory) Class.forName(JFACT_FACTORY)
-                .newInstance();
+        final OWLReasonerFactory fac = (OWLReasonerFactory) Class.forName(
+                JFACT_FACTORY).newInstance();
         OWLReasoner r = fac.createNonBufferingReasoner(ont);
         OWLDataFactory df = mngr.getOWLDataFactory();
         OWLClass a = df.getOWLClass(IRI.create("http://example.com/a"));
         OWLClass b = df.getOWLClass(IRI.create("http://example.com/b"));
         OWLClass c = df.getOWLClass(IRI.create("http://example.com/c"));
-        OWLObjectProperty p = df.getOWLObjectProperty(IRI.create("http://example.com/p"));
+        OWLObjectProperty p = df.getOWLObjectProperty(IRI
+                .create("http://example.com/p"));
         mngr.applyChange(new AddAxiom(ont, df.getOWLSubClassOfAxiom(a,
                 df.getOWLObjectSomeValuesFrom(p, b))));
-        mngr.applyChange(new AddAxiom(ont, df.getOWLSubClassOfAxiom(c, df.getOWLThing())));
-        NodeSet<OWLClass> subs = r.getSubClasses(df.getOWLObjectSomeValuesFrom(p, b),
-                true);
-        assertEquals(1, subs.getNodes().size());
+        mngr.applyChange(new AddAxiom(ont, df.getOWLSubClassOfAxiom(c,
+                df.getOWLThing())));
+        NodeSet<OWLClass> subs = r.getSubClasses(
+                df.getOWLObjectSomeValuesFrom(p, b), true);
+        assertEquals(1, subs.nodes().count());
         assertTrue(subs.containsEntity(a));
-        subs = r.getSubClasses(df.getOWLObjectSomeValuesFrom(p, df.getOWLThing()), true);
-        assertEquals(1, subs.getNodes().size());
+        subs = r.getSubClasses(
+                df.getOWLObjectSomeValuesFrom(p, df.getOWLThing()), true);
+        assertEquals(1, subs.nodes().count());
         assertTrue(subs.containsEntity(a));
         subs = r.getSubClasses(
                 df.getOWLObjectSomeValuesFrom(df.getOWLTopObjectProperty(),
                         df.getOWLThing()), true);
-        assertEquals(3, subs.getNodes().size());
+        assertEquals(3, subs.nodes().count());
         assertTrue(subs.containsEntity(a));
         assertTrue(subs.containsEntity(b));
         assertTrue(subs.containsEntity(c));
@@ -119,10 +123,10 @@ public class ReasonerTests {
     public void testReasoner4() throws Exception {
         OWLOntologyManager mngr = OWLManager.createOWLOntologyManager();
         OWLOntology ont = mngr.createOntology();
-        final OWLReasonerFactory fac = (OWLReasonerFactory) Class.forName(JFACT_FACTORY)
-                .newInstance();
+        final OWLReasonerFactory fac = (OWLReasonerFactory) Class.forName(
+                JFACT_FACTORY).newInstance();
         OWLReasoner r = fac.createNonBufferingReasoner(ont);
-        assertFalse(r.getTopDataPropertyNode().getEntities().isEmpty());
+        assertTrue(r.getTopDataPropertyNode().entities().findAny().isPresent());
     }
     // Hermit and pellet only return named object properties
     // JFact includes all inverses

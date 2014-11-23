@@ -9,6 +9,8 @@
  */
 package org.coode.suggestor.impl;
 
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -192,14 +194,8 @@ class FillerSuggestorImpl implements FillerSuggestor {
     public Set<OWLClass> getSanctionedFillers(OWLClassExpression c,
             OWLObjectPropertyExpression p, OWLClassExpression root,
             boolean direct) {
-        Set<OWLClass> fillers = new HashSet<>();
-        for (OWLClass f : getPossibleNamedFillers(c, p, root, direct)
-                .getFlattened()) {
-            if (meetsSanctions(c, p, f)) {
-                fillers.add(f);
-            }
-        }
-        return fillers;
+        return asSet(getPossibleNamedFillers(c, p, root, direct).entities()
+                .filter(f -> meetsSanctions(c, p, f)));
     }
 
     // INTERNALS
@@ -294,8 +290,9 @@ class FillerSuggestorImpl implements FillerSuggestor {
             Set<Node<F>> nodes = new HashSet<>();
             if (isMatch(c, p, start)) {
                 for (Node<F> sub : getDirectSubs(start)) {
-                    nodes.addAll(getLeaves(c, p,
-                            sub.getRepresentativeElement(), direct).getNodes());
+                    add(nodes,
+                            getLeaves(c, p, sub.getRepresentativeElement(),
+                                    direct).nodes());
                 }
                 if (!direct || nodes.isEmpty() && !start.isTopEntity()) {
                     nodes.add(getEquivalents(start));
@@ -313,9 +310,9 @@ class FillerSuggestorImpl implements FillerSuggestor {
                 if (isMatch(c, p, sub.getRepresentativeElement())) {
                     nodes.add(sub);
                     if (!direct) {
-                        nodes.addAll(getRoots(c, p,
-                                sub.getRepresentativeElement(), direct)
-                                .getNodes());
+                        add(nodes,
+                                getRoots(c, p, sub.getRepresentativeElement(),
+                                        direct).nodes());
                     }
                 }
             }

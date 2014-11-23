@@ -39,6 +39,7 @@
 package org.semanticweb.owlapi.api.test.alternate;
 
 import static org.junit.Assert.fail;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asSet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -152,7 +153,7 @@ public class RaceTestCase {
             }
 
             public int computeSize() {
-                return ontology.getSubClassAxiomsForSubClass(x).size();
+                return (int) ontology.subClassAxiomsForSubClass(x).count();
             }
 
             @Nonnull
@@ -167,8 +168,8 @@ public class RaceTestCase {
 
             @Override
             public void diagnose() {
-                Set<OWLSubClassOfAxiom> axiomsFound = ontology
-                        .getSubClassAxiomsForSubClass(x);
+                Set<OWLSubClassOfAxiom> axiomsFound = asSet(ontology
+                        .subClassAxiomsForSubClass(x));
                 System.out
                         .println("Expected getSubClassAxiomsForSubClass to return "
                                 + counter

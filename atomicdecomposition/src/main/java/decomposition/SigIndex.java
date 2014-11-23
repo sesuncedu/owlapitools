@@ -71,9 +71,7 @@ public class SigIndex {
      *        axiom
      */
     private void registerAx(AxiomWrapper ax) {
-        for (OWLEntity p : ax.getAxiom().getSignature()) {
-            Base.put(p, ax);
-        }
+        ax.getAxiom().signature().forEach(p -> Base.put(p, ax));
         // check whether the axiom is non-local
         checkNonLocal(ax, false);
         checkNonLocal(ax, true);
@@ -87,9 +85,7 @@ public class SigIndex {
      *        axiom
      */
     private void unregisterAx(AxiomWrapper ax) {
-        for (OWLEntity p : ax.getAxiom().getSignature()) {
-            Base.remove(p, ax);
-        }
+        ax.getAxiom().signature().forEach(p -> Base.remove(p, ax));
         // remove from the non-locality
         NonLocalFalse.remove(ax);
         NonLocalTrue.remove(ax);

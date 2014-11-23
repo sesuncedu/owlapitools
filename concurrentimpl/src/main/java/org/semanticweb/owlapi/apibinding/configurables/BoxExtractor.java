@@ -51,7 +51,6 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLObjectVisitorEx;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.parameters.Imports;
-import org.semanticweb.owlapi.util.OWLObjectVisitorExAdapter;
 
 /**
  * This class allows for the extraction of subsets of axioms based on their
@@ -70,8 +69,7 @@ import org.semanticweb.owlapi.util.OWLObjectVisitorExAdapter;
  * implementation is itself threadsafe. A single instance can be reused for
  * extracting the same Box from different ontologies without side effects.
  */
-public class BoxExtractor extends OWLObjectVisitorExAdapter<Set<OWLAxiom>>
-        implements OWLObjectVisitorEx<Set<OWLAxiom>> {
+public class BoxExtractor implements OWLObjectVisitorEx<Set<OWLAxiom>> {
 
     @Nonnull
     private final Collection<AxiomType<?>> types;
@@ -87,9 +85,13 @@ public class BoxExtractor extends OWLObjectVisitorExAdapter<Set<OWLAxiom>>
      */
     public BoxExtractor(@Nonnull Collection<AxiomType<?>> types,
             @Nonnull Imports importsClosure) {
-        super(Collections.<OWLAxiom> emptySet());
         this.types = new ArrayList<>(types);
         closure = importsClosure;
+    }
+
+    @Override
+    public Set<OWLAxiom> doDefault(Object o) {
+        return Collections.emptySet();
     }
 
     @Override

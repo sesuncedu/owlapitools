@@ -147,7 +147,6 @@ public class ThreadedReasoner implements OWLReasoner {
         threadedRun(thread);
     }
 
-    @SuppressWarnings("null")
     @Nonnull
     private <T> T threadedRun(Callable<T> r) {
         Future<T> toReturn = exec.submit(r);

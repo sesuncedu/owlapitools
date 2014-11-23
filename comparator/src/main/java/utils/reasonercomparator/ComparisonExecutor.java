@@ -1,12 +1,12 @@
 package utils.reasonercomparator;
 
 import static org.junit.Assert.assertTrue;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asSet;
 
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
@@ -65,15 +65,12 @@ public class ComparisonExecutor {
             assert t != null;
             r.isPrecomputed(t);
         }
-        Set<OWLClass> classes = o1.getClassesInSignature();
-        for (OWLClass c : classes) {
-            assert c != null;
-            r.isSatisfiable(c);
-        }
-        Set<OWLObjectProperty> objectProperties = o1
-                .getObjectPropertiesInSignature(Imports.INCLUDED);
-        Set<OWLDataProperty> dataProperties = o1.getDataPropertiesInSignature();
-        Set<OWLNamedIndividual> individuals = o1.getIndividualsInSignature();
+        o1.classesInSignature().forEach(c -> r.isSatisfiable(c));
+        Set<OWLObjectProperty> objectProperties = asSet(o1
+                .objectPropertiesInSignature(Imports.INCLUDED));
+        Set<OWLDataProperty> dataProperties = asSet(o1
+                .dataPropertiesInSignature());
+        Set<OWLNamedIndividual> individuals = asSet(o1.individualsInSignature());
         for (OWLObjectProperty o : objectProperties) {
             assert o != null;
             checkObject(o);
@@ -102,29 +99,33 @@ public class ComparisonExecutor {
                 }
             }
         }
-        for (OWLClass c : classes) {
-            assert c != null;
-            NodeSet<OWLClass> subclasses = r.getSubClasses(c, false);
-            NodeSet<OWLClass> superclasses = r.getSuperClasses(c, false);
-            checkClasses(c);
-            for (Node<OWLClass> n : subclasses) {
-                for (OWLClass sub : n) {
-                    for (Node<OWLClass> n1 : superclasses) {
-                        for (OWLClass sup : n1) {
-                            String message = "Wrong classification result! "
-                                    + sub.getIRI() + " not subclass of "
-                                    + sup.getIRI()
-                                    + " but it was supposed to be!";
-                            assertTrue(
-                                    message,
-                                    r.isEntailed(o1.getOWLOntologyManager()
-                                            .getOWLDataFactory()
-                                            .getOWLSubClassOfAxiom(sub, sup)));
-                        }
-                    }
-                }
-            }
-        }
+        o1.classesInSignature()
+                .forEach(
+                        c -> {
+                            NodeSet<OWLClass> subclasses = r.getSubClasses(c,
+                                    false);
+                            NodeSet<OWLClass> superclasses = r.getSuperClasses(
+                                    c, false);
+                            checkClasses(c);
+                            for (Node<OWLClass> n : subclasses) {
+                                for (OWLClass sub : n) {
+                                    for (Node<OWLClass> n1 : superclasses) {
+                                        for (OWLClass sup : n1) {
+                                            String message = "Wrong classification result! "
+                                                    + sub.getIRI()
+                                                    + " not subclass of "
+                                                    + sup.getIRI()
+                                                    + " but it was supposed to be!";
+                                            assertTrue(message, r.isEntailed(o1
+                                                    .getOWLOntologyManager()
+                                                    .getOWLDataFactory()
+                                                    .getOWLSubClassOfAxiom(sub,
+                                                            sup)));
+                                        }
+                                    }
+                                }
+                            }
+                        });
         for (OWLDataProperty p : dataProperties) {
             assert p != null;
             checkDataProperties(p);
@@ -143,15 +144,10 @@ public class ComparisonExecutor {
      *        repetition index
      */
     public void checkTautology(int index) {
-        for (OWLAxiom ax : o1.getLogicalAxioms()) {
-            assert ax != null;
-            if (!r.isEntailed(ax)) {
-                System.out.println("ReloadingTestCallBack.checkTautology()");
-                r.isEntailed(ax);
-            }
-            assertTrue("Axiom was supposed to be entailed! repetition: "
-                    + index + " axiom:" + ax, r.isEntailed(ax));
-        }
+        o1.logicalAxioms().forEach(
+                ax -> assertTrue(
+                        "Axiom was supposed to be entailed! repetition: "
+                                + index + " axiom:" + ax, r.isEntailed(ax)));
     }
 
     private void checkIndividuals(

@@ -11,7 +11,7 @@ package org.coode.suggestor.test;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nonnull;
 
@@ -91,19 +91,18 @@ public class CreateExistentialTree extends AbstractSuggestorTest {
         for (int i = 0; i < indent; i++) {
             System.out.print("    ");
         }
-        boolean started = false;
-        final Set<OWLObject> entities = new TreeSet<>(node.getEntities());
-        for (OWLObject o : entities) {
-            if (started) {
+        AtomicBoolean started = new AtomicBoolean(false);
+        node.entities().forEach(o -> {
+            if (started.get()) {
                 System.out.print(" == ");
             } else {
-                started = true;
+                started.set(true);
             }
             if (o instanceof OWLEntity) {
                 System.out.print(((OWLEntity) o).getIRI().getShortForm());
             } else {
                 System.out.print(o);
             }
-        }
+        });
     }
 }

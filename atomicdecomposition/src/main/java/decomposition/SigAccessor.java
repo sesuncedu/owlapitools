@@ -1,23 +1,28 @@
 package decomposition;
 
 import org.semanticweb.owlapi.model.OWLDataRange;
-import org.semanticweb.owlapi.util.OWLObjectVisitorAdapter;
+import org.semanticweb.owlapi.model.OWLObjectVisitor;
 
 /** helper class to set signature and locality class */
-public class SigAccessor extends OWLObjectVisitorAdapter {
+public class SigAccessor implements OWLObjectVisitor {
+
     LocalityChecker localityChecker;
 
-    /** @param c
-     *            locality checker */
+    /**
+     * @param c
+     *        locality checker
+     */
     public SigAccessor(LocalityChecker c) {
         localityChecker = c;
     }
 
-    /** @param expr
-     *            data range to check
-     * @return true iff EXPR is a top datatype or a built-in datatype; */
+    /**
+     * @param expr
+     *        data range to check
+     * @return true iff EXPR is a top datatype or a built-in datatype;
+     */
     public boolean isTopOrBuiltInDataType(OWLDataRange expr) {
-        return expr.isTopDatatype() || expr.isDatatype()
+        return expr.isTopDatatype() || expr.isOWLDatatype()
                 && expr.asOWLDatatype().isBuiltIn();
     }
 

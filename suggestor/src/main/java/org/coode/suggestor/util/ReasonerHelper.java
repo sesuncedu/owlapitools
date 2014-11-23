@@ -9,6 +9,8 @@
  */
 package org.coode.suggestor.util;
 
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,8 +58,8 @@ public class ReasonerHelper {
     /** @return referenced properties */
     public Set<OWLObjectProperty> getReferencedObjectProperties() {
         final OWLOntology root = r.getRootOntology();
-        Set<OWLObjectProperty> p = new HashSet<>(
-                root.getObjectPropertiesInSignature(Imports.INCLUDED));
+        Set<OWLObjectProperty> p = asSet(root
+                .objectPropertiesInSignature(Imports.INCLUDED));
         p.add(df.getOWLTopObjectProperty());
         p.add(df.getOWLBottomObjectProperty());
         return p;
@@ -66,8 +68,8 @@ public class ReasonerHelper {
     /** @return referenced properties */
     public Set<OWLDataProperty> getReferencedDataProperties() {
         final OWLOntology root = r.getRootOntology();
-        Set<OWLDataProperty> p = new HashSet<>(
-                root.getDataPropertiesInSignature(Imports.INCLUDED));
+        Set<OWLDataProperty> p = asSet(root
+                .dataPropertiesInSignature(Imports.INCLUDED));
         p.add(df.getOWLTopDataProperty());
         p.add(df.getOWLBottomDataProperty());
         return p;
@@ -182,29 +184,25 @@ public class ReasonerHelper {
     @Nonnull
     public OWLClassExpression getGlobalAssertedRange(
             @Nonnull OWLObjectPropertyExpression p) {
-        OWLClassExpression range = df.getOWLThing();
         Set<OWLClassExpression> assertedRanges = new HashSet<>();
-        Set<OWLObjectPropertyExpression> ancestors = new HashSet<>(r
-                .getSuperObjectProperties(p, false).getFlattened());
+        Set<OWLObjectPropertyExpression> ancestors = asSet(r
+                .getSuperObjectProperties(p, false).entities());
         ancestors.add(p);
-        for (OWLOntology ont : r.getRootOntology().getImportsClosure()) {
-            for (OWLObjectPropertyExpression ancestor : ancestors) {
-                Collection<OWLClassExpression> searcher = Searcher.range(ont
-                        .getObjectPropertyRangeAxioms(ancestor));
-                assertedRanges.addAll(searcher);
-            }
+        r.getRootOntology()
+                .importsClosure()
+                .forEach(
+                        o -> ancestors.forEach(a -> add(assertedRanges,
+                                Searcher.range(o.objectPropertyRangeAxioms(a)))));
+        if (assertedRanges.isEmpty()) {
+            return df.getOWLThing();
         }
-        if (!assertedRanges.isEmpty()) {
-            // filter to remove redundant ranges (supers of others) as
-            // getRanges() just returns all of them
-            assertedRanges = filterClassExpressions(assertedRanges);
-            if (assertedRanges.size() == 1) {
-                range = assertedRanges.iterator().next();
-            } else {
-                range = df.getOWLObjectIntersectionOf(assertedRanges);
-            }
+        // filter to remove redundant ranges (supers of others) as
+        // getRanges() just returns all of them
+        Set<OWLClassExpression> cleanedRanges = filterClassExpressions(assertedRanges);
+        if (cleanedRanges.size() == 1) {
+            return cleanedRanges.iterator().next();
         }
-        return range;
+        return df.getOWLObjectIntersectionOf(cleanedRanges);
     }
 
     /**
@@ -221,26 +219,22 @@ public class ReasonerHelper {
      * @return the range of this property or Top if none is found
      */
     public OWLDataRange getGlobalAssertedRange(OWLDataProperty p) {
-        OWLDataRange range = df.getTopDatatype();
         Set<OWLDataRange> assertedRanges = new HashSet<>();
-        Set<OWLDataProperty> ancestors = new HashSet<>(r
-                .getSuperDataProperties(p, false).getFlattened());
+        Set<OWLDataProperty> ancestors = asSet(r.getSuperDataProperties(p,
+                false).entities());
         ancestors.add(p);
-        for (OWLOntology ont : r.getRootOntology().getImportsClosure()) {
-            for (OWLDataProperty ancestor : ancestors) {
-                Collection<OWLDataRange> searcher = Searcher.range(ont
-                        .getDataPropertyRangeAxioms(ancestor));
-                assertedRanges.addAll(searcher);
-            }
+        r.getRootOntology()
+                .importsClosure()
+                .forEach(
+                        o -> ancestors.forEach(a -> add(assertedRanges,
+                                Searcher.range(o.dataPropertyRangeAxioms(a)))));
+        if (assertedRanges.isEmpty()) {
+            return df.getTopDatatype();
         }
-        if (!assertedRanges.isEmpty()) {
-            if (assertedRanges.size() == 1) {
-                range = assertedRanges.iterator().next();
-            } else {
-                range = df.getOWLDataIntersectionOf(assertedRanges);
-            }
+        if (assertedRanges.size() == 1) {
+            return assertedRanges.iterator().next();
         }
-        return range;
+        return df.getOWLDataIntersectionOf(assertedRanges);
     }
 
     /**
@@ -328,7 +322,7 @@ public class ReasonerHelper {
                     "Cannot find a candidate property for datatype subsumption checking");
         }
         Set<OWLDatatype> subs = new HashSet<>();
-        if (range.isDatatype()) {
+        if (range.isOWLDatatype()) {
             subs.add(range.asOWLDatatype());
         }
         OWLDataSomeValuesFrom pSomeRange = df
@@ -368,25 +362,19 @@ public class ReasonerHelper {
      */
     public OWLDataPropertyExpression getCandidatePropForRangeSubsumptionCheck(
             OWLDataRange range) {
-        for (OWLOntology ont : r.getRootOntology().getImportsClosure()) {
-            for (OWLDataProperty p : ont.getDataPropertiesInSignature()) {
-                if (!p.isTopEntity()
+        return r.getRootOntology()
+                .importsClosure()
+                .flatMap(o -> o.dataPropertiesInSignature())
+                .filter(p -> !p.isTopEntity()
                         && r.isSatisfiable(df
-                                .getOWLDataSomeValuesFrom(p, range))) {
-                    return p;
-                }
-            }
-        }
-        return null;
+                                .getOWLDataSomeValuesFrom(p, range)))
+                .findFirst().orElse(null);
     }
 
     /** @return all datatypes in the ontology import closure */
     public Set<OWLDatatype> getDatatypesInSignature() {
-        Set<OWLDatatype> dts = new HashSet<>();
-        for (OWLOntology ont : r.getRootOntology().getImportsClosure()) {
-            dts.addAll(ont.getDatatypesInSignature());
-        }
-        return dts;
+        return asSet(r.getRootOntology().importsClosure()
+                .flatMap(o -> o.datatypesInSignature()));
     }
 
     /**

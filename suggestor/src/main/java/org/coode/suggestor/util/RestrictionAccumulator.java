@@ -9,8 +9,10 @@
  */
 package org.coode.suggestor.util;
 
-import java.util.Collection;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.*;
+
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.semanticweb.owlapi.model.OWLClass;
@@ -73,28 +75,22 @@ public class RestrictionAccumulator {
     protected Set<OWLRestriction> accummulateRestrictions(
             OWLClassExpression cls, OWLPropertyExpression prop,
             Class<? extends OWLRestriction> type) {
-        Set<OWLClass> relevantClasses = r.getSuperClasses(cls, false)
-                .getFlattened();
+        Set<OWLClass> relevantClasses = asSet(r.getSuperClasses(cls, false)
+                .entities());
         RestrictionVisitor v = getVisitor(prop, type);
         if (!cls.isAnonymous()) {
             relevantClasses.add(cls.asOWLClass());
         } else {
             cls.accept(v);
         }
-        final OWLOntology rootOnt = r.getRootOntology();
-        final Set<OWLOntology> onts = rootOnt.getImportsClosure();
+        OWLOntology rootOnt = r.getRootOntology();
+        List<OWLOntology> onts = asList(rootOnt.importsClosure());
         for (OWLClass ancestor : relevantClasses) {
             for (OWLOntology ont : onts) {
-                Collection<OWLClassExpression> superclasses = Searcher.sup(ont
-                        .getSubClassAxiomsForSubClass(ancestor));
-                for (OWLClassExpression restr : superclasses) {
-                    restr.accept(v);
-                }
-                Collection<OWLClassExpression> equivalent = Searcher
-                        .equivalent(ont.getEquivalentClassesAxioms(ancestor));
-                for (OWLClassExpression restr : equivalent) {
-                    restr.accept(v);
-                }
+                Searcher.sup(ont.subClassAxiomsForSubClass(ancestor),
+                        OWLClassExpression.class).forEach(c -> c.accept(v));
+                Searcher.equivalent(ont.equivalentClassesAxioms(ancestor),
+                        OWLClassExpression.class).forEach(c -> c.accept(v));
             }
         }
         return v.restrs;

@@ -1,5 +1,7 @@
 package org.coode.suggestor.impl;
 
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.add;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,8 +43,9 @@ abstract class AbstractMatcher<R extends OWLPropertyRange, F extends R, P extend
         Set<Node<F>> nodes = new HashSet<>();
         if (isMatch(c, p, start)) {
             for (Node<F> sub : getDirectSubs(start)) {
-                nodes.addAll(getLeaves(c, p, sub.getRepresentativeElement(),
-                        direct).getNodes());
+                add(nodes,
+                        getLeaves(c, p, sub.getRepresentativeElement(), direct)
+                                .nodes());
             }
             if (!direct || nodes.isEmpty() && !start.isTopEntity()) {
                 nodes.add(getEquivalents(start));
@@ -60,8 +63,9 @@ abstract class AbstractMatcher<R extends OWLPropertyRange, F extends R, P extend
             if (isMatch(c, p, sub.getRepresentativeElement())) {
                 nodes.add(sub);
                 if (!direct) {
-                    nodes.addAll(getRoots(c, p, sub.getRepresentativeElement(),
-                            direct).getNodes());
+                    add(nodes,
+                            getRoots(c, p, sub.getRepresentativeElement(),
+                                    direct).nodes());
                 }
             }
         }

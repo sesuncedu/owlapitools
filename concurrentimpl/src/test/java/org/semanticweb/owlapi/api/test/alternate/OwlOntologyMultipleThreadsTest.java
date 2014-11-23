@@ -75,6 +75,7 @@ public class OwlOntologyMultipleThreadsTest {
             this.o2 = o2;
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void execute() {
             for (int index = 0; index < 100; index++) {

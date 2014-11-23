@@ -1,13 +1,15 @@
 package decomposition;
 
-import static org.semanticweb.owlapi.model.AxiomType.AXIOM_TYPES;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asList;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 /**
  * A filter for axioms
@@ -22,17 +24,14 @@ public class AxiomSelector {
      * @return list of declarations and logical axioms
      */
     public static List<OWLAxiom> selectAxioms(OWLOntology o) {
-        List<OWLAxiom> axioms = new ArrayList<>();
-        for (OWLOntology ont : o.getImportsClosure()) {
-            for (AxiomType<? extends OWLAxiom> type : AXIOM_TYPES) {
-                if (type.isLogical() || type.equals(AxiomType.DECLARATION)) {
-                    for (OWLAxiom ax : ont.getAxioms(type)) {
-                        axioms.add(ax);
-                    }
-                }
-            }
-        }
-        return axioms;
+        return asList(AxiomType.LOGICAL_AXIOMS_AND_DECLARATIONS_TYPES.stream()
+                .flatMap(axioms(o)), OWLAxiom.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static Function<? super AxiomType<?>, Stream<OWLAxiom>> axioms(
+            OWLOntology o) {
+        return type -> (Stream<OWLAxiom>) o.axioms(type, Imports.INCLUDED);
     }
 
     /**
@@ -41,10 +40,6 @@ public class AxiomSelector {
      * @return axioms wrapped as AxiomWrapper
      */
     public static List<AxiomWrapper> wrap(List<OWLAxiom> o) {
-        List<AxiomWrapper> axioms = new ArrayList<>();
-        for (OWLAxiom ax : o) {
-            axioms.add(new AxiomWrapper(ax));
-        }
-        return axioms;
+        return asList(o.stream().map(ax -> new AxiomWrapper(ax)));
     }
 }

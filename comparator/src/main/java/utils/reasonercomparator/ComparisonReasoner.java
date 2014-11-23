@@ -62,7 +62,6 @@ public class ComparisonReasoner implements OWLReasoner {
         return timings;
     }
 
-    @SuppressWarnings("null")
     @Nonnull
     static <T> T o(List<T> l) {
         return l.get(0);
@@ -195,21 +194,29 @@ public class ComparisonReasoner implements OWLReasoner {
     private static String vars(Object o) {
         StringBuilder b = new StringBuilder();
         if (o instanceof Node) {
-            for (OWLEntity e : ((Node<OWLEntity>) o).getEntities()) {
-                b.append("OWL").append(e.getEntityType().getName()).append(" ")
-                        .append(e.getIRI().getShortForm());
-                b.append(" = C(\"").append(e.getIRI().getNamespace())
-                        .append(e.getIRI().getShortForm()).append("\");\n");
-            }
+            ((Node<OWLEntity>) o).entities()
+                    .forEach(
+                            e -> b.append("OWL")
+                                    .append(e.getEntityType().getName())
+                                    .append(" ")
+                                    .append(e.getIRI().getShortForm())
+                                    .append(" = C(\"")
+                                    .append(e.getIRI().getNamespace())
+                                    .append(e.getIRI().getShortForm())
+                                    .append("\");\n"));
             return b.toString();
         }
         if (o instanceof NodeSet) {
-            for (OWLEntity e : ((NodeSet<OWLEntity>) o).getFlattened()) {
-                b.append("OWL").append(e.getEntityType().getName()).append(" ")
-                        .append(e.getIRI().getShortForm());
-                b.append(" = C(\"").append(e.getIRI().getNamespace())
-                        .append(e.getIRI().getShortForm()).append("\");\n");
-            }
+            ((NodeSet<OWLEntity>) o).entities()
+                    .forEach(
+                            e -> b.append("OWL")
+                                    .append(e.getEntityType().getName())
+                                    .append(" ")
+                                    .append(e.getIRI().getShortForm())
+                                    .append(" = C(\"")
+                                    .append(e.getIRI().getNamespace())
+                                    .append(e.getIRI().getShortForm())
+                                    .append("\");\n"));
             return b.toString();
         }
         if (o instanceof OWLEntity) {
@@ -226,16 +233,14 @@ public class ComparisonReasoner implements OWLReasoner {
     private static String args(Object o) {
         StringBuilder b = new StringBuilder();
         if (o instanceof Node) {
-            for (OWLEntity e : ((Node<OWLEntity>) o).getEntities()) {
-                b.append(e.getIRI().getShortForm()).append(", ");
-            }
+            ((Node<OWLEntity>) o).entities().forEach(
+                    e -> b.append(e.getIRI().getShortForm()).append(", "));
             b.delete(b.length() - 2, b.length());
             return b.toString();
         }
         if (o instanceof NodeSet) {
-            for (OWLEntity e : ((NodeSet<OWLEntity>) o).getFlattened()) {
-                b.append(e.getIRI().getShortForm()).append(", ");
-            }
+            ((NodeSet<OWLEntity>) o).entities().forEach(
+                    e -> b.append(e.getIRI().getShortForm()).append(", "));
             b.delete(b.length() - 2, b.length());
             return b.toString();
         }

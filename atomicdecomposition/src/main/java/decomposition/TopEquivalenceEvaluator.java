@@ -1,7 +1,6 @@
 package decomposition;
 
 import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataAllValuesFrom;
 import org.semanticweb.owlapi.model.OWLDataComplementOf;
 import org.semanticweb.owlapi.model.OWLDataExactCardinality;
@@ -30,9 +29,13 @@ import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLObjectUnionOf;
 import org.semanticweb.owlapi.model.OWLObjectVisitor;
 
-/** check whether class expressions are equivalent to top wrt given locality
- * class */
-public class TopEquivalenceEvaluator extends SigAccessor implements OWLObjectVisitor {
+/**
+ * check whether class expressions are equivalent to top wrt given locality
+ * class
+ */
+public class TopEquivalenceEvaluator extends SigAccessor implements
+        OWLObjectVisitor {
+
     /** keep the value here */
     boolean isTopEq = false;
 
@@ -70,19 +73,24 @@ public class TopEquivalenceEvaluator extends SigAccessor implements OWLObjectVis
 
     // / @return true iff (<= n R.C) is topEq
     private boolean isMaxTopEquivalent(int n, OWLObject R, OWLObject C) {
-        return localityChecker.isBotEquivalent(R) || localityChecker.isBotEquivalent(C);
+        return localityChecker.isBotEquivalent(R)
+                || localityChecker.isBotEquivalent(C);
     }
 
-    /** @param l
-     *            locality checker */
+    /**
+     * @param l
+     *        locality checker
+     */
     public TopEquivalenceEvaluator(LocalityChecker l) {
         super(l);
     }
 
     // ported from: boolean isTopEquivalent(Expression expr) {
-    /** @param expr
-     *            expression to check
-     * @return true iff an EXPRession is equivalent to top wrt defined policy */
+    /**
+     * @param expr
+     *        expression to check
+     * @return true iff an EXPRession is equivalent to top wrt defined policy
+     */
     public boolean isTopEquivalent(OWLObject expr) {
         if (expr.isTopEntity()) {
             return true;
@@ -110,25 +118,13 @@ public class TopEquivalenceEvaluator extends SigAccessor implements OWLObjectVis
     // ported from:public void visit(ConceptAnd expr) {
     @Override
     public void visit(OWLObjectIntersectionOf expr) {
-        for (OWLClassExpression p : expr.getOperands()) {
-            if (!isTopEquivalent(p)) {
-                isTopEq = false;
-                return;
-            }
-        }
-        isTopEq = true;
+        isTopEq = !expr.operands().anyMatch(p -> !isTopEquivalent(p));
     }
 
     // ported from: public void visit(ConceptOr expr) {
     @Override
     public void visit(OWLObjectUnionOf expr) {
-        for (OWLClassExpression p : expr.getOperands()) {
-            if (isTopEquivalent(p)) {
-                isTopEq = true;
-                return;
-            }
-        }
-        isTopEq = false;
+        isTopEq = expr.operands().anyMatch(p -> isTopEquivalent(p));
     }
 
     // ported from: public void visit(ConceptOneOf expr) {

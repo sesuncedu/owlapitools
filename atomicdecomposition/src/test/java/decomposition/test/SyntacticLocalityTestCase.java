@@ -1,6 +1,7 @@
 package decomposition.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asSet;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -463,10 +464,10 @@ public class SyntacticLocalityTestCase {
 
     @Test
     public void shouldBeLocalswrlRule() {
-        Set<SWRLAtom> head = new HashSet<SWRLAtom>(Arrays.asList(df
-                .getSWRLClassAtom(a, df.getSWRLIndividualArgument(x))));
-        Set<SWRLAtom> body = new HashSet<SWRLAtom>(Arrays.asList(df
-                .getSWRLClassAtom(b, df.getSWRLIndividualArgument(y))));
+        Set<SWRLAtom> head = new HashSet<>(Arrays.asList(df.getSWRLClassAtom(a,
+                df.getSWRLIndividualArgument(x))));
+        Set<SWRLAtom> body = new HashSet<>(Arrays.asList(df.getSWRLClassAtom(b,
+                df.getSWRLIndividualArgument(y))));
         axiom = df.getSWRLRule(head, body);
         // signature intersects
         test(axiom, true, a);
@@ -478,7 +479,7 @@ public class SyntacticLocalityTestCase {
     public void shouldResetSignature() {
         OWLSubClassOfAxiom ax = df.getOWLSubClassOfAxiom(a, b);
         testSubject.preprocessOntology(Arrays.asList(new AxiomWrapper(ax)));
-        assertEquals(ax.getSignature(), testSubject.getSignature()
+        assertEquals(asSet(ax.signature()), testSubject.getSignature()
                 .getSignature());
     }
 

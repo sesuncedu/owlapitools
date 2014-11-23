@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.atomicdecomposition;
 
-import java.util.ArrayList;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asList;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -26,10 +27,7 @@ public class Atom {
 
     private void initSignature() {
         if (signature == null) {
-            signature = new ArrayList<>();
-            for (OWLAxiom ax : axioms) {
-                signature.addAll(ax.getSignature());
-            }
+            signature = asList(axioms.stream().flatMap(ax -> ax.signature()));
         }
     }
 

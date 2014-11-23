@@ -11,13 +11,11 @@ package org.coode.suggestor.impl;
 
 import org.coode.suggestor.api.PropertySanctionRule;
 import org.coode.suggestor.api.PropertySuggestor;
-import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
-import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.model.OWLPropertyExpression;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -65,35 +63,31 @@ public class SimpleAnnotationPropertySanctionRule implements
 
     private boolean
             hasAnnotation(OWLClassExpression c, OWLPropertyExpression p) {
-        if (!p.isAnonymous()) {
-            if (!c.isAnonymous()
-                    && hasSanctionAnnotation(c.asOWLClass(), (OWLProperty) p)) {
-                return true;
-            }
-            if (recursive) {
-                // check the ancestors
-                for (OWLClass superCls : r.getSuperClasses(c, true)
-                        .getFlattened()) {
-                    if (hasAnnotation(superCls, p)) {
-                        return true;
-                    }
-                }
-            }
+        if (p.isAnonymous()) {
+            return false;
+        }
+        if (!c.isAnonymous()
+                && hasSanctionAnnotation(c.asOWLClass(), (OWLProperty) p)) {
+            return true;
+        }
+        if (recursive) {
+            // check the ancestors
+            return r.getSuperClasses(c, true).entities()
+                    .anyMatch(cls -> hasAnnotation(cls, p));
         }
         return false;
     }
 
     private boolean hasSanctionAnnotation(OWLClass c, OWLProperty p) {
         IRIMatcher iriMatcher = new IRIMatcher(p.getIRI());
-        for (OWLOntology ont : r.getRootOntology().getImportsClosure()) {
-            for (OWLAnnotation annot : Searcher.annotations(ont
-                    .getAnnotationAssertionAxioms(c.getIRI()))) {
-                if (annot.getProperty().equals(annotationProperty)
-                        && annot.getValue().accept(iriMatcher).booleanValue()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return r.getRootOntology()
+                .importsClosure()
+                .flatMap(
+                        o -> Searcher.annotations(o.annotationAssertionAxioms(c
+                                .getIRI())))
+                .anyMatch(
+                        a -> a.getProperty().equals(annotationProperty)
+                                && a.getValue().accept(iriMatcher)
+                                        .booleanValue());
     }
 }

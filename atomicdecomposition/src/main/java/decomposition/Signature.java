@@ -5,8 +5,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.util.OWLAPIStreamUtils;
 
 /** class to hold the signature of a module */
 public class Signature {
@@ -30,6 +32,14 @@ public class Signature {
     }
 
     /**
+     * @param sig
+     *        signature elements
+     */
+    public Signature(Stream<OWLEntity> sig) {
+        OWLAPIStreamUtils.add(set, sig);
+    }
+
+    /**
      * @param p
      *        entity to add to signature
      * @return true if p was not in the signature already
@@ -44,6 +54,14 @@ public class Signature {
      */
     public void addAll(Collection<OWLEntity> p) {
         set.addAll(p);
+    }
+
+    /**
+     * @param p
+     *        all entities to add
+     */
+    public void addAll(Stream<OWLEntity> p) {
+        OWLAPIStreamUtils.add(set, p);
     }
 
     /**

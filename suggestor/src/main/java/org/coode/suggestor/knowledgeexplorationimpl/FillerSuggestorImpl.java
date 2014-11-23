@@ -9,9 +9,13 @@
  */
 package org.coode.suggestor.knowledgeexplorationimpl;
 
-import java.util.Collection;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.*;
+
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -197,14 +201,8 @@ class FillerSuggestorImpl implements FillerSuggestor {
     public Set<OWLClass> getSanctionedFillers(OWLClassExpression c,
             OWLObjectPropertyExpression p, OWLClassExpression root,
             boolean direct) {
-        Set<OWLClass> fillers = new HashSet<>();
-        for (OWLClass f : getPossibleNamedFillers(c, p, root, direct)
-                .getFlattened()) {
-            if (meetsSanctions(c, p, f)) {
-                fillers.add(f);
-            }
-        }
-        return fillers;
+        return asSet(getPossibleNamedFillers(c, p, root, direct).entities()
+                .filter(f -> meetsSanctions(c, p, f)));
     }
 
     // INTERNALS
@@ -301,9 +299,9 @@ class FillerSuggestorImpl implements FillerSuggestor {
                 if (isMatch(c, p, sub.getRepresentativeElement())) {
                     nodes.add(sub);
                     if (!direct) {
-                        nodes.addAll(getRoots(c, p,
-                                sub.getRepresentativeElement(), direct)
-                                .getNodes());
+                        add(nodes,
+                                getRoots(c, p, sub.getRepresentativeElement(),
+                                        direct).nodes());
                     }
                 }
             }
@@ -348,33 +346,26 @@ class FillerSuggestorImpl implements FillerSuggestor {
         public final NodeSet<OWLClass> getLeaves(OWLClassExpression c,
                 OWLObjectPropertyExpression p, OWLClassExpression start,
                 boolean direct) {
-            Set<Node<OWLClass>> toReturn = new HashSet<>();
             RootNode root = r.getRoot(c);
             if (root.getNode() == null) {
                 System.out
                         .println("FillerSuggestorImpl.AbstractMatcher.getLeaves() null root? "
                                 + c + "\t" + p + "\t" + start + "\t" + direct);
-            } else {
-                Node<? extends OWLObjectPropertyExpression> responses = r
-                        .getObjectNeighbours(root, true);
-                for (OWLObjectPropertyExpression p1 : responses.getEntities()) {
-                    final Collection<RootNode> objectNeighbours = r
-                            .getObjectNeighbours(root, p1.asOWLObjectProperty());
-                    for (RootNode pointer : objectNeighbours) {
-                        final Node<? extends OWLClassExpression> objectLabel = r
-                                .getObjectLabel(pointer, direct);
-                        Set<OWLClass> node = new HashSet<>();
-                        for (OWLClassExpression c1 : objectLabel.getEntities()) {
-                            if (c1 == null) {
-                                // TODO anonymous expressions
-                            } else {
-                                node.add(c1.asOWLClass());
-                            }
-                        }
-                        toReturn.add(new OWLClassNode(node));
-                    }
-                }
             }
+            Set<Node<OWLClass>> toReturn = new HashSet<>();
+            r.getObjectNeighbours(root, true)
+                    .entities()
+                    .flatMap(
+                            p1 -> r.getObjectNeighbours(root,
+                                    p1.asOWLObjectProperty()).stream())
+                    .forEach(pointer -> {
+                        // TODO anonymous expressions
+                            Stream<OWLClass> node = r
+                                    .getObjectLabel(pointer, direct).entities()
+                                    .filter(c1 -> c1 != null)
+                                    .map(c1 -> c1.asOWLClass());
+                            toReturn.add(new OWLClassNode(node));
+                        });
             return createNodeSet(toReturn);
         }
     }
@@ -405,34 +396,30 @@ class FillerSuggestorImpl implements FillerSuggestor {
         public final NodeSet<OWLDatatype>
                 getLeaves(OWLClassExpression c, OWLDataPropertyExpression p,
                         OWLDataRange start, boolean direct) {
-            Set<Node<OWLDatatype>> toReturn = new HashSet<>();
             RootNode root = r.getRoot(c);
             if (root.getNode() == null) {
                 System.out
                         .println("FillerSuggestorImpl.AbstractMatcher.getLeaves() null root? "
                                 + c + "\t" + p + "\t" + start + "\t" + direct);
-            } else {
-                Node<? extends OWLDataPropertyExpression> responses = r
-                        .getDataNeighbours(root, true);
-                for (OWLDataPropertyExpression p1 : responses.getEntities()) {
-                    final Collection<RootNode> objectNeighbours = r
-                            .getDataNeighbours(root, p1.asOWLDataProperty());
-                    for (RootNode pointer : objectNeighbours) {
-                        final Node<? extends OWLDataRange> objectLabel = r
-                                .getDataLabel(pointer, direct);
-                        Set<OWLDatatype> node = new HashSet<>();
-                        for (OWLDataRange c1 : objectLabel.getEntities()) {
-                            if (c1 == null) {
-                                // TODO anonymous expressions
-                            } else {
-                                node.add(c1.asOWLDatatype());
-                            }
-                        }
-                        toReturn.add(new OWLDatatypeNode(node));
-                    }
-                }
+                return createNodeSet(Collections.emptySet());
             }
+            Set<Node<OWLDatatype>> toReturn = asSet(r
+                    .getDataNeighbours(root, true)
+                    .entities()
+                    .map(p1 -> p1.asOWLDataProperty())
+                    .flatMap(p1 -> r.getDataNeighbours(root, p1).stream())
+                    .map(pointer -> new OWLDatatypeNode(buildNode(direct,
+                            pointer))));
             return createNodeSet(toReturn);
+        }
+
+        protected List<OWLDatatype> buildNode(boolean direct, RootNode pointer) {
+            // TODO anonymous expressions are nulls in the
+            // entities
+            List<OWLDatatype> node = asList(r.getDataLabel(pointer, direct)
+                    .entities().filter(c1 -> c1 != null)
+                    .map(c1 -> c1.asOWLDatatype()));
+            return node;
         }
     }
 }

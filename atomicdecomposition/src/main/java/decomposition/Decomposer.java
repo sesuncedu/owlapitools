@@ -60,8 +60,8 @@ public class Decomposer {
         for (AxiomWrapper p : axioms) {
             if (p.isUsed()) {
                 // check whether an axiom is local wrt its own signature
-                modularizer.extract(p, new Signature(p.getAxiom()
-                        .getSignature()), type);
+                modularizer.extract(p, new Signature(p.getAxiom().signature()),
+                        type);
                 if (modularizer.isTautology(p.getAxiom(), type)) {
                     tautologies.add(p);
                     p.setUsed(false);
@@ -117,7 +117,7 @@ public class Decomposer {
             return atom;
         }
         // build an atom: use a module to find atomic dependencies
-        atom = buildModule(new Signature(ax.getAxiom().getSignature()), parent);
+        atom = buildModule(new Signature(ax.getAxiom().signature()), parent);
         // no empty modules should be here
         assert atom != null;
         // register axiom as a part of an atom
