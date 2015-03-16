@@ -66,18 +66,18 @@ public class SemanticLocalityChecker implements OWLAxiomVisitor,
         LocalityChecker {
 
     /** Reasoner to detect the tautology */
-    OWLReasoner Kernel;
-    OWLDataFactory df;
-    OWLReasonerFactory factory;
+    private OWLReasoner Kernel;
+    private OWLDataFactory df;
+    private OWLReasonerFactory factory;
     /** map between axioms and concept expressions */
-    MultiMap<OWLAxiom, OWLClassExpression> ExprMap = new MultiMap<OWLAxiom, OWLClassExpression>();
+    private MultiMap<OWLAxiom, OWLClassExpression> ExprMap = new MultiMap<OWLAxiom, OWLClassExpression>();
 
     /**
      * @param axiom
      *        axiom
      * @return expression necessary to build query for a given type of an axiom
      */
-    protected Collection<OWLClassExpression> getExpr(OWLAxiom axiom) {
+    private Collection<OWLClassExpression> getExpr(OWLAxiom axiom) {
         return axiom.getNestedClassExpressions();
     }
 
@@ -96,7 +96,7 @@ public class SemanticLocalityChecker implements OWLAxiomVisitor,
     }
 
     /** remember the axiom locality value here */
-    boolean isLocal;
+    private boolean isLocal;
     private OWLOntologyManager manager;
 
     /**

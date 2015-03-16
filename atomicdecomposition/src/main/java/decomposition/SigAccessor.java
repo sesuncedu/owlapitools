@@ -4,12 +4,12 @@ import org.semanticweb.owlapi.model.OWLDataRange;
 import org.semanticweb.owlapi.util.OWLObjectVisitorAdapter;
 
 /** helper class to set signature and locality class */
-public class SigAccessor extends OWLObjectVisitorAdapter {
+class SigAccessor extends OWLObjectVisitorAdapter {
     LocalityChecker localityChecker;
 
     /** @param c
      *            locality checker */
-    public SigAccessor(LocalityChecker c) {
+    SigAccessor(LocalityChecker c) {
         localityChecker = c;
     }
 
@@ -26,7 +26,7 @@ public class SigAccessor extends OWLObjectVisitorAdapter {
         return localityChecker.getSignature().topRLocal();
     }
 
-    protected Signature getSignature() {
+    Signature getSignature() {
         return localityChecker.getSignature();
     }
 }

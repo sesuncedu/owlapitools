@@ -10,7 +10,7 @@ import org.semanticweb.owlapi.util.MultiMap;
 /** signature index
  * 
  * @author ignazio */
-public class SigIndex {
+class SigIndex {
     /** map between entities and axioms that contains them in their signature */
     private MultiMap<OWLEntity, AxiomWrapper> Base = new MultiMap<OWLEntity, AxiomWrapper>();
     /** locality checker */
@@ -85,7 +85,7 @@ public class SigIndex {
      * 
      * @param ax
      *            the axiom to process */
-    public void processAx(AxiomWrapper ax) {
+    private void processAx(AxiomWrapper ax) {
         if (ax.isUsed()) {
             registerAx(ax);
         } else {

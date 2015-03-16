@@ -32,9 +32,9 @@ import org.semanticweb.owlapi.model.OWLObjectVisitor;
 /** check whether class expressions are equivalent to bottom wrt given locality
  * class */
 // XXX verify unused parameters
-public class BotEquivalenceEvaluator extends SigAccessor implements OWLObjectVisitor {
+class BotEquivalenceEvaluator extends SigAccessor implements OWLObjectVisitor {
     /** keep the value here */
-    boolean isBotEq = false;
+    private boolean isBotEq = false;
 
     /** @param l
      *            l */

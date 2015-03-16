@@ -1,14 +1,9 @@
 package decomposition;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
-
 import org.semanticweb.owlapi.util.CollectionFactory;
+
+import java.io.Serializable;
+import java.util.*;
 
 /** @param <K>
  *            key
@@ -48,7 +43,7 @@ public class IdentityMultiMap<K, V> implements Serializable {
      *            key
      * @param values
      *            values */
-    public void setEntry(K key, Collection<V> values) {
+    private void setEntry(K key, Collection<V> values) {
         this.map.put(key, values);
         this.size = -1;
     }
@@ -68,7 +63,7 @@ public class IdentityMultiMap<K, V> implements Serializable {
     }
 
     /** @return the set of keys */
-    public Set<K> keySet() {
+    Set<K> keySet() {
         return this.map.keySet();
     }
 
@@ -120,7 +115,7 @@ public class IdentityMultiMap<K, V> implements Serializable {
     }
 
     /** @return the size of the multimap (sum of all the sizes of the sets) */
-    public int size() {
+    private int size() {
         if (size < 0) {
             size = getAllValues().size();
         }
@@ -184,7 +179,7 @@ public class IdentityMultiMap<K, V> implements Serializable {
      *            k
      * @param v
      *            v */
-    public void putAll(K k, Collection<V> v) {
+    private void putAll(K k, Collection<V> v) {
         Collection<V> set = map.get(k);
         if (set == null) {
             set = createCollection();

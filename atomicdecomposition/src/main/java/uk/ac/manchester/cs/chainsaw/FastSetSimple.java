@@ -27,11 +27,11 @@ public class FastSetSimple implements FastSet {
         return b.toString();
     }
 
-    protected int[] values;
-    protected int size = 0;
-    protected static final int defaultSize = 16;
+    private int[] values;
+    private int size = 0;
+    private static final int defaultSize = 16;
 
-    protected int insertionIndex(int key) {
+    private int insertionIndex(int key) {
         if (key < values[0]) {
             return -1;
         }
@@ -66,49 +66,6 @@ public class FastSetSimple implements FastSet {
         return -lowerbound - 1;
     }
 
-    /** default constructor */
-    public FastSetSimple() {}
-
-    /** @param c1
-     *            c1
-     * @param c2
-     *            c2 */
-    public FastSetSimple(FastSetSimple c1, FastSetSimple c2) {
-        values = new int[(c1.size + c2.size) / defaultSize * defaultSize + defaultSize];
-        int i = 0;
-        int j = 0;
-        int index = 0;
-        for (; i < c1.size && j < c2.size; index++) {
-            if (c1.values[i] < c2.values[j]) {
-                values[index] = c1.values[i];
-                i++;
-            } else if (c2.values[j] < c1.values[i]) {
-                values[index] = c2.values[j];
-                j++;
-            }
-            // the result must be a set: equal elements advance both indexes
-            else if (c1.values[i] == c2.values[j]) {
-                values[index] = c1.values[i];
-                i++;
-                j++;
-            }
-        }
-        // remaining elements in one set or the other
-        if (i < c1.size) {
-            for (; i < c1.size; i++, index++) {
-                values[index] = c1.values[i];
-            }
-            // new size here
-            size = index;
-        } else {
-            for (; j < c2.size; j++, index++) {
-                values[index] = c2.values[j];
-            }
-            // new size here
-            size = index;
-        }
-    }
-
     @Override
     public int get(int i) {
         if (values != null) {
@@ -117,7 +74,7 @@ public class FastSetSimple implements FastSet {
         throw new IllegalArgumentException("Illegal argument " + i + ": no such element");
     }
 
-    protected void init() {
+    private void init() {
         values = new int[defaultSize];
         size = 0;
     }

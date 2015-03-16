@@ -8,7 +8,7 @@ package uk.ac.manchester.cs.chainsaw;
 /** sorted set of ints.
  * 
  * @author ignazio */
-public interface FastSet {
+interface FastSet {
     /** @param e
      *            add e */
     void add(int e);

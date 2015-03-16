@@ -32,9 +32,9 @@ import org.semanticweb.owlapi.model.OWLObjectVisitor;
 
 /** check whether class expressions are equivalent to top wrt given locality
  * class */
-public class TopEquivalenceEvaluator extends SigAccessor implements OWLObjectVisitor {
+class TopEquivalenceEvaluator extends SigAccessor implements OWLObjectVisitor {
     /** keep the value here */
-    boolean isTopEq = false;
+    private boolean isTopEq = false;
 
     // non-empty Concept/Data expression
     // / @return true iff C^I is non-empty

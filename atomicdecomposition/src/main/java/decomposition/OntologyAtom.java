@@ -29,7 +29,7 @@ public class OntologyAtom {
     private int id = 0;
 
     /** remove all atoms in AllDepAtoms from DepAtoms */
-    public void filterDep() {
+    private void filterDep() {
         for (OntologyAtom p : allDependencies) {
             dependencies.remove(p);
         }
@@ -39,7 +39,7 @@ public class OntologyAtom {
      * 
      * @param checked
      *            sets of atoms to check */
-    public void buildAllDepAtoms(Set<OntologyAtom> checked) {
+    private void buildAllDepAtoms(Set<OntologyAtom> checked) {
         // first gather all dep atoms from all known dep atoms
         for (OntologyAtom p : dependencies) {
             Set<OntologyAtom> Dep = p.getAllDepAtoms(checked);

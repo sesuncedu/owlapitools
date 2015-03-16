@@ -1,11 +1,11 @@
 package uk.ac.manchester.cs.atomicdecomposition;
 
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLEntity;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLEntity;
 
 /** An atom in the atomic decomposition */
 public class Atom {
@@ -43,20 +43,8 @@ public class Atom {
         return signature;
     }
 
-    /** @return axioms in the atom */
     public Collection<OWLAxiom> getAxioms() {
         return axioms;
-    }
-
-    /** @return label for the atom */
-    public Collection<OWLEntity> getLabel() {
-        return label;
-    }
-
-    /** @param labelSignature
-     *            the label for the atom */
-    public void setLabel(Collection<OWLEntity> labelSignature) {
-        label = labelSignature;
     }
 
     @Override

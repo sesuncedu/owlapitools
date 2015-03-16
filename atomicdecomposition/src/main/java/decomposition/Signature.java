@@ -1,12 +1,8 @@
 package decomposition;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.semanticweb.owlapi.model.OWLEntity;
+
+import java.util.*;
 
 /** class to hold the signature of a module */
 public class Signature {
@@ -42,16 +38,8 @@ public class Signature {
     /** @param top
      *            set new locality polarity */
     public void setLocality(boolean top) {
-        this.setLocality(top, top);
-    }
-
-    /** @param topC
-     *            new concept locality polarity
-     * @param topR
-     *            new role locality polarity */
-    public void setLocality(boolean topC, boolean topR) {
-        topCLocality = topC;
-        topRLocality = topR;
+        topCLocality = top;
+        topRLocality = top;
     }
 
     @Override
